@@ -882,3 +882,25 @@ elif menu == "Dokumentasi":
             - **Deployment:** Streamlit
             - **Labeling:** Groq API (Llama-3 8B Instant)
             """)
+
+        st.markdown("---")
+        
+        col_t1, col_t2 = st.columns(2)
+        with col_t1:
+            st.markdown("""
+            ### 🚀 Cara Penggunaan Aplikasi
+            Aplikasi EduPulse CoC sangat mudah digunakan melalui menu navigasi di sebelah kiri:
+            1. **🏠 Beranda:** Membaca ringkasan eksekutif proyek dan insight utama.
+            2. **📈 EDA Dashboard:** Menjelajahi tren data, WordCloud, dan korelasi *engagement* secara interaktif.
+            3. **🤖 AI Prediction:** Anda bisa mencoba langsung kehebatan model AI! Ketik komentar Anda (bahkan dengan bahasa gaul/slang) dan AI akan mendeteksi sentimennya secara *real-time*.
+            4. **📄 Dokumentasi:** Membaca penjelasan arsitektur teknis dan profil tim pengembang.
+            """)
+        with col_t2:
+            st.markdown("""
+            ### 👥 Informasi Tim
+            Proyek dan aplikasi ini dikembangkan untuk GWE 2026 Data Science Challenge oleh:
+            
+            - 🧑‍💻 **[NAMA ANGGOTA 1]** — [Peran, misal: Lead Data Scientist / ML Engineer]
+            - 👩‍💻 **[NAMA ANGGOTA 2]** — [Peran, misal: Data Analyst / Visualizations]
+            - 👨‍💻 **[NAMA ANGGOTA 3]** — [Peran, misal: UI/UX & Deployment Engineer]
+            """)
