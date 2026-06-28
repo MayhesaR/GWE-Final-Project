@@ -10,6 +10,9 @@ import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from sklearn.feature_extraction.text import CountVectorizer
+import requests
+from streamlit_option_menu import option_menu
+from streamlit_lottie import st_lottie
 
 # ==============================================================================
 # 0. PAGE CONFIG & GLOBAL STYLE
@@ -34,75 +37,96 @@ CUSTOM_STOPWORDS = set([
 
 st.markdown("""
 <style>
-    /* ── Global ─────────────────────────────────────────── */
+    /* ── Global (Green-Cream Glassmorphism) ──────────────── */
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
-    .stApp { background-color: #0d1117; color: #c9d1d9; }
+    
+    /* Background Gradient (Dark Forest) */
+    .stApp { 
+        background: radial-gradient(circle at top left, #0a1f14 0%, #050a07 100%); 
+        color: #e5e7eb; 
+    }
 
     /* ── Headings ───────────────────────────────────────── */
-    h1 { color: #e6edf3 !important; font-size: 2rem !important; font-weight: 800 !important; }
-    h2 { color: #58a6ff !important; font-weight: 700 !important; }
-    h3, h4 { color: #79c0ff !important; }
+    h1, h2, h3 { color: #fcd34d !important; font-weight: 800 !important; }
+    
+    /* Neon Text Gradient for Hero */
+    .hero-title {
+        background: -webkit-linear-gradient(45deg, #10b981, #fcd34d);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-size: 3.5rem;
+        font-weight: 900;
+        margin-bottom: 0px;
+    }
 
     /* ── Sidebar ────────────────────────────────────────── */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #0d1117 0%, #161b22 100%);
-        border-right: 1px solid #21262d;
+        background: rgba(5, 10, 7, 0.6) !important;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-right: 1px solid rgba(16, 185, 129, 0.2);
     }
-    [data-testid="stSidebar"] * { color: #c9d1d9 !important; }
+    [data-testid="stSidebar"] * { color: #e5e7eb !important; }
 
-    /* ── Metric Cards ───────────────────────────────────── */
+    /* ── Metric Cards & Glass Panels ────────────────────── */
     .metric-row { display: flex; gap: 16px; margin-bottom: 28px; }
-    .metric-card {
-        flex: 1; background: #161b22; border: 1px solid #30363d;
-        padding: 22px 20px; border-radius: 12px; text-align: center;
-        transition: all 0.25s ease; position: relative; overflow: hidden;
+    .metric-card, .result-box {
+        flex: 1; 
+        background: rgba(255, 255, 255, 0.03); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(16, 185, 129, 0.15);
+        padding: 22px 20px; border-radius: 16px; text-align: center;
+        transition: all 0.3s ease; 
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     }
-    .metric-card::before {
-        content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-        background: var(--accent, #58a6ff);
+    .metric-card:hover, .result-box:hover { 
+        transform: translateY(-5px); 
+        border-color: rgba(16, 185, 129, 0.5); 
+        box-shadow: 0 0 20px rgba(16, 185, 129, 0.2); 
     }
-    .metric-card:hover { transform: translateY(-4px); border-color: #58a6ff; box-shadow: 0 8px 24px rgba(88,166,255,.15); }
-    .metric-value { font-size: 2.2rem; font-weight: 800; color: var(--accent, #3fb950); margin-bottom: 4px; }
-    .metric-label { font-size: 0.78rem; color: #8b949e; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; }
-    .metric-sub { font-size: 0.75rem; color: #58a6ff; margin-top: 4px; }
+    .metric-value { font-size: 2.4rem; font-weight: 800; color: #10b981; margin-bottom: 4px; text-shadow: 0 0 10px rgba(16,185,129,0.3); }
+    .metric-label { font-size: 0.8rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; }
+    .metric-sub { font-size: 0.75rem; color: #fcd34d; margin-top: 4px; }
 
     /* ── Sentiment Badge ────────────────────────────────── */
     .badge {
         display: inline-block; padding: 4px 14px; border-radius: 20px;
         font-size: 0.82rem; font-weight: 700; letter-spacing: .5px;
     }
-    .badge-positive { background: rgba(63,185,80,.15); color: #3fb950; border: 1px solid #3fb950; }
-    .badge-negative { background: rgba(248,81,73,.15); color: #f85149; border: 1px solid #f85149; }
-    .badge-neutral  { background: rgba(210,153,34,.15); color: #d29922; border: 1px solid #d29922; }
+    .badge-positive { background: rgba(16,185,129,.15); color: #10b981; border: 1px solid #10b981; box-shadow: 0 0 10px rgba(16,185,129,0.2); }
+    .badge-negative { background: rgba(244,63,94,.15); color: #f43f5e; border: 1px solid #f43f5e; box-shadow: 0 0 10px rgba(244,63,94,0.2); }
+    .badge-neutral  { background: rgba(251,191,36,.15); color: #fbbf24; border: 1px solid #fbbf24; box-shadow: 0 0 10px rgba(251,191,36,0.2); }
 
-    /* ── Result Box ─────────────────────────────────────── */
-    .result-box {
-        background: #161b22; border: 1px solid #30363d; border-radius: 12px;
-        padding: 20px; margin-top: 16px; text-align: center;
-    }
-    .result-label { font-size: 0.75rem; color: #8b949e; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
-    .result-sentiment { font-size: 2.8rem; font-weight: 900; margin: 8px 0; }
+    /* ── Result Box (AI Prediction) ─────────────────────── */
+    .result-box { margin-top: 16px; }
+    .result-label { font-size: 0.75rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+    .result-sentiment { font-size: 3rem; font-weight: 900; margin: 12px 0; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
 
     /* ── Tabs ───────────────────────────────────────────── */
-    .stTabs [data-baseweb="tab-list"] { gap: 16px; border-bottom: 1px solid #21262d; }
-    .stTabs [data-baseweb="tab"] {
-        height: 44px; background: transparent; border-radius: 6px 6px 0 0;
-        padding: 0 16px; font-weight: 500; color: #8b949e;
-    }
-    .stTabs [aria-selected="true"] { background: #1f2937 !important; border-bottom: 2px solid #58a6ff; color: #e6edf3 !important; }
+    .stTabs [data-baseweb="tab-list"] { gap: 16px; border-bottom: 1px solid rgba(16, 185, 129, 0.2); }
+    .stTabs [data-baseweb="tab"] { height: 44px; background: transparent; border-radius: 6px 6px 0 0; padding: 0 16px; font-weight: 600; color: #9ca3af; }
+    .stTabs [aria-selected="true"] { background: rgba(16, 185, 129, 0.1) !important; border-bottom: 2px solid #10b981; color: #10b981 !important; text-shadow: 0 0 8px rgba(16,185,129,0.3); }
 
     /* ── Info/Warning overrides ─────────────────────────── */
-    .stAlert { border-radius: 8px; }
-    div[data-testid="stMarkdownContainer"] blockquote {
-        border-left: 3px solid #58a6ff; padding-left: 16px; color: #8b949e;
-    }
+    .stAlert { border-radius: 12px; background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
 </style>
 """, unsafe_allow_html=True)
 
 # ==============================================================================
 # 1. LOAD DATA & MODEL (CACHED)
 # ==============================================================================
+@st.cache_data
+def load_lottieurl(url: str):
+    try:
+        r = requests.get(url, timeout=5)
+        if r.status_code != 200:
+            return None
+        return r.json()
+    except:
+        return None
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 
@@ -180,10 +204,18 @@ with st.sidebar:
 
     st.markdown("---")
 
-    menu = st.radio(
-        "Navigasi",
-        ["🏠 Halaman Utama", "📊 EDA Dashboard", "🤖 AI Prediction", "📄 Dokumentasi"],
-        label_visibility="collapsed"
+    menu = option_menu(
+        menu_title=None,
+        options=["Halaman Utama", "EDA Dashboard", "AI Prediction", "Dokumentasi"],
+        icons=['house', 'bar-chart-line', 'robot', 'file-text'],
+        menu_icon="cast",
+        default_index=0,
+        styles={
+            "container": {"padding": "0!important", "background-color": "transparent"},
+            "icon": {"color": "#10b981", "font-size": "18px"}, 
+            "nav-link": {"font-size": "15px", "text-align": "left", "margin":"5px", "--hover-color": "rgba(16, 185, 129, 0.1)"},
+            "nav-link-selected": {"background-color": "rgba(16, 185, 129, 0.2)", "color": "#fcd34d", "border-left": "3px solid #10b981", "font-weight":"600"},
+        }
     )
 
     st.markdown("---")
@@ -210,9 +242,18 @@ with st.sidebar:
 # ==============================================================================
 # 3. HALAMAN UTAMA
 # ==============================================================================
-if menu == "🏠 Halaman Utama":
-    st.title("🧠 EduPulse CoC — Intelligence Dashboard")
-    st.markdown("##### Mengukur Denyut Nadi Edutainment Digital Indonesia secara Real-time.")
+if menu == "Halaman Utama":
+    col_h1, col_h2 = st.columns([3, 1])
+    with col_h1:
+        st.markdown("<h1 class='hero-title'>EduPulse CoC</h1>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#e5e7eb; margin-top:0;'>Intelligence Dashboard</h3>", unsafe_allow_html=True)
+        st.markdown("<div style='color:#9ca3af; font-size:1.1rem;'>Mengukur Denyut Nadi Edutainment Digital Indonesia secara Real-time.</div>", unsafe_allow_html=True)
+    with col_h2:
+        # Lottie animasi otak cerdas
+        lottie_brain = load_lottieurl("https://assets5.lottiefiles.com/packages/lf20_tno6cg2w.json")
+        if lottie_brain:
+            st_lottie(lottie_brain, height=120, key="brain_hero")
+            
     st.markdown("---")
 
     total   = metadata.get("total_samples", len(df) if not df.empty else 0)
@@ -300,7 +341,7 @@ if menu == "🏠 Halaman Utama":
 # ==============================================================================
 # 4. EDA DASHBOARD
 # ==============================================================================
-elif menu == "📊 EDA Dashboard":
+elif menu == "EDA Dashboard":
     st.title("📊 Exploratory Data Analysis")
 
     if df.empty:
@@ -498,12 +539,18 @@ elif menu == "📊 EDA Dashboard":
 # ==============================================================================
 # 5. AI PREDICTION
 # ==============================================================================
-elif menu == "🤖 AI Prediction":
-    st.title("🤖 Live AI Sentiment Prediction")
-    st.markdown(
-        "Ketikkan komentar YouTube dalam Bahasa Indonesia (termasuk bahasa gaul/slang), "
-        "dan AI akan menganalisis sentimennya secara real-time."
-    )
+elif menu == "AI Prediction":
+    col_h1, col_h2 = st.columns([4, 1])
+    with col_h1:
+        st.title("Live AI Sentiment Prediction")
+        st.markdown(
+            "Ketikkan komentar YouTube dalam Bahasa Indonesia (termasuk bahasa gaul/slang), "
+            "dan AI akan menganalisis sentimennya secara real-time."
+        )
+    with col_h2:
+        lottie_robot = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_i9mxcbpi.json")
+        if lottie_robot:
+            st_lottie(lottie_robot, height=100, key="robot_pred")
 
     col_left, col_right = st.columns([3, 2])
 
@@ -694,7 +741,7 @@ elif menu == "🤖 AI Prediction":
 # ==============================================================================
 # 6. DOKUMENTASI
 # ==============================================================================
-elif menu == "📄 Dokumentasi":
+elif menu == "Dokumentasi":
     st.title("📄 Arsitektur & Dokumentasi Teknis")
 
     tab_arsitektur, tab_metrik, tab_tentang = st.tabs([

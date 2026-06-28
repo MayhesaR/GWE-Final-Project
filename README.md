@@ -56,10 +56,12 @@ EduPulse CoC/
 │   ├── raw/               ← Dataset mentah dari Kaggle
 │   └── processed/         ← Dataset hasil labeling & inferensi
 ├── models/
-│   ├── indobert_sentiment_final/   ← Model final (IndoBERT)
-│   └── ensemble_baseline.pkl       ← Model baseline (Ensemble)
+│   ├── ensemble_baseline.pkl       ← Model baseline (Ensemble / Fallback)
+│   └── model_metadata.json         ← Metrik performa model untuk dashboard
 └── presentation/
     └── slides.pdf         ← Slide presentasi
+
+*(Catatan: Model final IndoBERT berukuran >100MB sehingga tidak disimpan di repositori lokal ini. Model secara dinamis dipanggil melalui Hugging Face Hub: `mayhesar/indobert-sentiment-gwe`)*
 ```
 
 ## 💻 Cara Menjalankan Secara Lokal
@@ -69,4 +71,4 @@ EduPulse CoC/
 
 ## 🔗 Link
 - **Dataset Kaggle:** [Ruangguru Clash of Champions 2024 YouTube Comments](https://www.kaggle.com/datasets/rezkyyayang/ruangguru-clash-of-champions-2024-youtube-comments)
-- **Demo Streamlit:** *(coming soon — akan diupdate setelah deployment)*
+- **Demo Streamlit:** [https://edupulsecoc.streamlit.app/](https://edupulsecoc.streamlit.app/)
