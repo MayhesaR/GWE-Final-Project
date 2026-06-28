@@ -874,7 +874,7 @@ elif menu == "Dokumentasi":
             |------|----------|
             | **Groq Llama-3 8B Instant** | Gold labeling 1.500 sampel |
             | **IndoBERT (HuggingFace)** | Pre-trained model untuk fine-tuning |
-            | **Antigravity (Google DeepMind)** | Debugging & kode assistance |
+            | **Antigravity** | Debugging & kode assistance |
 
             ### 📁 Tech Stack
             - **NLP:** HuggingFace Transformers, scikit-learn, SHAP
