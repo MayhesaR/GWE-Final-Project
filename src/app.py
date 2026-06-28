@@ -900,7 +900,7 @@ elif menu == "Dokumentasi":
             ### 👥 Informasi Tim
             Proyek dan aplikasi ini dikembangkan untuk GWE 2026 Data Science Challenge oleh:
             
-            - 🧑‍💻 **[NAMA ANGGOTA 1]** — [Peran, misal: Lead Data Scientist / ML Engineer]
-            - 👩‍💻 **[NAMA ANGGOTA 2]** — [Peran, misal: Data Analyst / Visualizations]
-            - 👨‍💻 **[NAMA ANGGOTA 3]** — [Peran, misal: UI/UX & Deployment Engineer]
+            - 🧑‍💻 **Muhammad Dhimas Pranaya**
+            - 👩‍💻 **Mayhesa Rachmadiharja**
+            - 👨‍💻 **Achmad Dhafi Fadilah** 
             """)
