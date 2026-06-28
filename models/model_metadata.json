@@ -1,0 +1,21 @@
+{
+    "model_type": "IndoBERT Fine-tuned (indobenchmark/indobert-base-p1)",
+    "model_path": "../models/indobert_sentiment_final",
+    "baseline_model": "VotingClassifier (LR + RF + XGBoost) + TF-IDF",
+    "total_samples": 13777,
+    "gold_samples": 1500,
+    "label_classes": [
+        "negative",
+        "neutral",
+        "positive"
+    ],
+    "labeling_method": "LLM Gold Label (Groq Llama-3 8B Instant)",
+    "bert_accuracy": 0.7733,
+    "bert_f1_macro": 0.7248,
+    "bert_f1_negative": 0.6667,
+    "bert_f1_neutral": 0.6506,
+    "bert_f1_positive": 0.8571,
+    "ensemble_f1_macro": 0.6804,
+    "improvement": 0.0444,
+    "max_length": 128
+}
